@@ -74,6 +74,19 @@ class Custom_Dataset(Dataset):
 
 # Mask Vec Dataset For Online K-means Train Dataset
 class Mask_Vec_Dataset(Dataset):
+    """
+    Dataset for training online K-means clustering.
+    
+    This dataset loads mask feature vectors from JSON files that contain paths to numpy arrays.
+    Each JSON file contains information about an image and its associated masks.
+    The dataset returns only the feature vectors for training the K-means model.
+    
+    Attributes:
+        root_dir (str): Root directory containing all data
+        json_dir (str): Directory containing JSON files relative to root_dir
+        item_dir (str): Subdirectory within json_dir containing specific JSON files
+        meta_list (list): List of [image_name, mask_name, mask_vec_path] entries
+    """
     def __init__(self, root_dir, json_dir, item_dir):
         self.root_dir = root_dir
         self.json_dir = json_dir
@@ -81,6 +94,10 @@ class Mask_Vec_Dataset(Dataset):
         self.generate_meta_list()
     
     def generate_meta_list(self,):
+        """
+        Builds a list of all mask vectors by parsing JSON files.
+        Each JSON contains an image name and dictionary of mask vectors.
+        """
         self.meta_list = []
         json_list = glob.glob(os.path.join(self.root_dir, self.json_dir, self.item_dir ,'*.json'))
         for json_path in json_list:
@@ -97,14 +114,19 @@ class Mask_Vec_Dataset(Dataset):
         return len(self.meta_list)
     
     def get_mask_vec(self, filename):
+        """Loads a mask feature vector from a numpy file"""
         return np.load(filename)
     
     def __getitem__(self, index):
+        """
+        Returns only the feature vector for the mask at the given index.
+        Note: Unlike the test dataset, this doesn't return image_name or mask_name
+        as they're not needed for training the K-means model.
+        """
         item = self.meta_list[index]
         _, _, mask_vec_path = item[0], item[1], item[2]
         mask_vec = self.get_mask_vec(mask_vec_path)
         return np.array(mask_vec)
-
 
 # Mask Vec Dataset For Online K-means Test Dataset
 class Mask_Vec_TestDataset(Dataset):

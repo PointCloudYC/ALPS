@@ -87,10 +87,12 @@ parser.add_argument('--delete_temp', type=bool, default=False, choices=[True, Fa
 parser.add_argument('--sam_checkpoint', default="",type=str, help='checkpoint path to the sam pre-trained model', )
 parser.add_argument('--model_type', type=str, default='vit_h', choices=['vit_b', 'vit_l', 'vit_h'])
 parser.add_argument('--device', type=str, default='cuda', choices=['cuda', 'cpu'])
+
 ### Online K-Means
 parser.add_argument('--number_clusters', type=int, default=46, help='the number of clustering classes')
 parser.add_argument('--batch_size', type=int, default=512, help='the batch size adopted in Online K-means')
 parser.add_argument('--kmeans_save_name', type=str, default='k_means.pkl', help='model save name of online k-means')
+
 ### Visualization
 parser.add_argument('--vis', type=bool, default=False, choices=[True, False], help='if True the program will meanwhile save the visualization pseudo masks, which will occupy more storages!')
 parser.add_argument('--vis_dir', type=str, default="vis_mask", help='path to the visualization instance masks')
@@ -244,6 +246,9 @@ def use_encoder_align_mask_feature():
                     json.dump(img_info, file)
 
                 logger.info(f'Saving image: {image_name} all masks as {json_save_name}.')
+        # This line is not necessary as the test_dataloader will be automatically garbage collected
+        # when it goes out of scope at the end of the function.
+        # Keeping it for explicit memory management, but it could be removed.
         del test_dataloader
         del test_dataset
         gc.collect()
