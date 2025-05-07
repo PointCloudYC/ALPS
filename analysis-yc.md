@@ -2,7 +2,7 @@
 
 TLDR: see `run.sh`
 
-- clone SAM and set up the environment 
+- clone the repo and set up the environment using uv
 
 ```
 git clone https://github.com/PointCloudYC/ALPS.git
@@ -131,9 +131,20 @@ Here's how these components map to the code:
 
 3. **Feature clustering**:
    - Implemented in `online_k_means_clustering_train()` and `online_k_means_clustering_test()` functions in main.py
-   - Uses online K-means to cluster mask features and assign labels
-   - Code: `kmeans = MiniBatchKMeans(n_clusters=args.number_clusters, ...)`
-   - Code: `cluster_labels = kmeans.predict(mask_features)`
+   - Uses MiniBatchKMeans from scikit-learn for online clustering, which processes data in small batches
+   - Online K-means clustering differs from standard K-means by:
+     - **Processing data in mini-batches** rather than all at once, making it memory-efficient for large datasets
+     - **Incrementally updating cluster centers** as new data arrives
+     - **Allowing for dynamic adaptation** to new patterns in the data
+   - The implementation uses a two-phase approach:
+     1. Training phase: `online_k_means_clustering_train()` builds the clustering model
+        - Code: `kmeans = MiniBatchKMeans(n_clusters=args.number_clusters, batch_size=args.batch_size, ...)`
+        - Processes mask feature vectors in batches to find optimal cluster centers
+     2. Testing/inference phase: `online_k_means_clustering_test()` applies the trained model
+        - Code: `cluster_labels = kmeans.predict(mask_features)`
+        - Assigns each mask to its nearest cluster center
+   - This approach enables efficient processing of large datasets that wouldn't fit in memory
+   - The number of clusters is controlled by the `--number_clusters` parameter
 
 4. **Instance mask generation**:
    - Final step that generates labeled instance masks based on clustering results
@@ -141,6 +152,29 @@ Here's how these components map to the code:
    - Code: `save_colored_mask(masks, cluster_labels, ...)`
 
 ![ALPS Framework](images/fw.png)
+
+### additional analysis
+
+5. **dataset creation**
+
+   - Implemented in `Custom_Dataset` class in `utils/dataset.py`
+   - The dataset is created by the `generate_all_masks()` function in `main.py`
+   - The dataset is saved in the `dataset_path` directory
+   - The dataset will use the `__getitem__()` function to get the image name, image and masks
+
+6. **online k-means clustering dataset**
+
+   - Implemented in `Mask_Vec_Dataset` class in `utils/dataset.py`
+   - The dataset is created by the `generate_all_masks()` function in `main.py`
+   - The dataset is saved in the `dataset_path` directory
+   - The dataset will use the `__getitem__()` function to get masks only
+
+7. **SAM model**
+
+   - Implemented in `sam_vit.py`
+   - The model is created by the `build_sam_vit()` function in `utils/model.py`
+   - The model is saved in the `dataset_path` directory
+   - The model will use the `__call__()` function to get the mask features
 
 
 ## How to Customize
