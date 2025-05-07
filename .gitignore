@@ -172,3 +172,9 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# SAM checkpoints
+sam_*.pth
+
+# ALPS checkpoint
+alps_*.pth
