@@ -1,14 +1,31 @@
 ## how to run the repo
 
+TLDR: see `run.sh`
+
 - clone SAM and set up the environment 
 
 ```
-git clone git@github.com:facebookresearch/segment-anything.git
-cd segment-anything
+git clone https://github.com/PointCloudYC/ALPS.git
+cd ALPS
+# optional: create uv project 
+uv init
 # Create a virtual environment with uv
 uv venv
 source .venv/bin/activate
-# so any changes you make to the code will be immediately reflected without needing to reinstall.
+
+# install pytorch, torchvision, scikit-learn, etc.
+# see https://pytorch.org/get-started/previous-versions/
+uv pip install torch==1.12.1+cu113 torchvision==0.13.1+cu113 torchaudio==0.12.1 --extra-index-url https://download.pytorch.org/whl/cu113
+uv pip install scikit-learn==1.3.2
+
+# install vanialla SAM w. edit mode
+# Check if segment-anything folder exists
+if [ ! -d "segment-anything" ]; then
+    echo "Cloning segment-anything repository..."
+    git clone https://github.com/facebookresearch/segment-anything.git
+else
+    echo "segment-anything repository already exists"
+fi
 uv pip install -e .
 ```
 
